@@ -16,6 +16,7 @@
         }
     }
 
+    
     $sql = "SELECT * FROM items ORDER BY idItem DESC";
     $query = $pdo->query($sql);
     $items = $query->fetchAll(PDO::FETCH_OBJ);
