@@ -11,8 +11,8 @@
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $name = trim($_POST['name']);
         $category = trim($_POST['category']);
-        $value = filter_var($_POST['value'], FILTER_VALIDATE_INT);
-        $weight = filter_var($_POST['weight'], FILTER_VALIDATE_FLOAT);
+        $value = filter_var($_POST['value'] ?? false, FILTER_VALIDATE_FLOAT);
+        $weight = filter_var($_POST['weight'] ?? false, FILTER_VALIDATE_FLOAT);
         $is_on_blackbuy = isset($_POST['is_on_blackbuy']) ? 1 : 0;
 
         if ($name !== '' && $category !== '' && $value !== false && $weight !== false) {
@@ -54,7 +54,7 @@
         <input type="text" id="category" name="category" required><br><br>
 
         <label for="value">Valore ($):</label><br>
-        <input type="number" id="value" name="value" required><br><br>
+        <input type="number" id="value" name="value" step="0.01" required><br><br>
 
         <label for="weight">Peso (Kg):</label><br>
         <input type="number" step="0.1" id="weight" name="weight" required><br><br>
