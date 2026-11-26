@@ -32,16 +32,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title>Login - Thief Simulator</title>
 </head>
 <body>
 
     <nav>
-        <a href="index.php">Landing Page</a> |
-        <a href="login.php">Login</a> |
-        <a href="register.php">Registrazione</a>
-    </nav>
-    <hr>
+    <a href="index.php">Home</a> |
+    <a href="login.php">Login</a> |
+    <a href="register.php">Registrazione</a> |
+    <a href="insert.php">Inserisci</a> |
+    <a href="edit.php">Modifica / Elimina</a>
+    <?php if (isset($_SESSION['user_id'])): ?>
+        | <a href="logout.php">Logout (<?= htmlspecialchars($_SESSION['username'] ?? '') ?>)</a>
+    <?php endif; ?>
+</nav>
+<hr>
 
     <h1>Login</h1>
 
@@ -58,8 +63,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <input type="submit" value="Accedi">
     </form>
-
-    <p>Non hai un account? <a href="register.php">Registrati qui</a></p>
 
 </body>
 </html>

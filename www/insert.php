@@ -1,44 +1,71 @@
 <?php
-    // Connessione al database
-    $pdo = new PDO(
-        "mysql:host=db;dbname=community;charset=utf8mb4",
-        getenv("DB_USER"),
-        getenv("DB_PASSWORD")
-    );
+session_start();
 
-    $messaggio = "";
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $name = trim($_POST['name']);
-        $category = trim($_POST['category']);
-        $value = filter_var($_POST['value'] ?? false, FILTER_VALIDATE_FLOAT);
-        $weight = filter_var($_POST['weight'] ?? false, FILTER_VALIDATE_FLOAT);
-        $is_on_blackbuy = isset($_POST['is_on_blackbuy']) ? 1 : 0;
+include 'Item.php';
 
-        if ($name !== '' && $category !== '' && $value !== false && $weight !== false) {
-            $sql = "INSERT INTO items (name, category, value, weight, is_on_blackbuy) VALUES (?, ?, ?, ?, ?)";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$name, $category, $value, $weight, $is_on_blackbuy]);
-            $messaggio = "Oggetto inserito con successo!";
-        } else {
-            $messaggio = "Errore: compila tutti i campi correttamente.";
-        }
+$pdo = new PDO(
+    "mysql:host=db;dbname=community;charset=utf8mb4",
+    getenv("DB_USER"),
+    getenv("DB_PASSWORD")
+);
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+$messaggio = "";
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $item = new Item();
+    $item->name = trim($_POST['name'] ?? '');
+    $item->category = trim($_POST['category'] ?? '');
+    $value = filter_var($_POST['value'] ?? false, FILTER_VALIDATE_FLOAT);
+    $weight = filter_var($_POST['weight'] ?? false, FILTER_VALIDATE_FLOAT);
+    $item->is_on_blackbuy = isset($_POST['is_on_blackbuy']);
+    $item->user_id = (int)$_SESSION['user_id'];
+
+    if ($item->name !== '' && $item->category !== '' && $value !== false && $weight !== false) {
+        $item->value = $value;
+        $item->weight = $weight;
+
+        $sql = "INSERT INTO items (name, category, value, weight, is_on_blackbuy, user_id)
+                VALUES (?, ?, ?, ?, ?, ?)";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            $item->name,
+            $item->category,
+            $item->value,
+            $item->weight,
+            $item->is_on_blackbuy ? 1 : 0,
+            $item->user_id
+        ]);
+        $messaggio = "Oggetto inserito con successo!";
+    } else {
+        $messaggio = "Errore: compila tutti i campi correttamente.";
     }
+}
 ?>
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Thief Simulator - Aggiungi Oggetto</title>
+    <title>Thief Simulator - Inserisci Oggetto</title>
 </head>
 <body>
 
     <nav>
-        <a href="index.php">Home</a> | 
-        <a href="insert.php">Aggiungi Oggetto</a> | 
-        <a href="delete.php">Elimina Elementi</a>
-    </nav>
-    <hr>
+    <a href="index.php">Home</a> |
+    <a href="login.php">Login</a> |
+    <a href="register.php">Registrazione</a> |
+    <a href="insert.php">Inserisci</a> |
+    <a href="edit.php">Modifica / Elimina</a>
+    <?php if (isset($_SESSION['user_id'])): ?>
+        | <a href="logout.php">Logout (<?= htmlspecialchars($_SESSION['username'] ?? '') ?>)</a>
+    <?php endif; ?>
+</nav>
+<hr>
 
     <h1>Inserisci un nuovo oggetto</h1>
 
@@ -54,7 +81,7 @@
         <input type="text" id="category" name="category" required><br><br>
 
         <label for="value">Valore ($):</label><br>
-        <input type="number" id="value" name="value" step="0.01" required><br><br>
+        <input type="number" step="0.01" id="value" name="value" required><br><br>
 
         <label for="weight">Peso (Kg):</label><br>
         <input type="number" step="0.1" id="weight" name="weight" required><br><br>
